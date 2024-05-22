@@ -21,6 +21,7 @@ from brax.io import mjcf
 from etils import epath
 import jax
 from jax import numpy as jp
+import mujoco
 
 
 class InvertedDoublePendulum(PipelineEnv):
@@ -116,19 +117,21 @@ class InvertedDoublePendulum(PipelineEnv):
   # pyformat: enable
 
 
-  def __init__(self, backend='generalized', **kwargs):
+  def __init__(self, backend='generalized', sys_params=None, **kwargs):
     path = (
         epath.resource_path('brax')
         / 'envs/assets/inverted_double_pendulum.xml'
     )
     sys = mjcf.load(path)
-
     n_frames = 2
 
     if backend in ['spring', 'positional']:
       sys = sys.tree_replace({'opt.timestep': 0.005})
       n_frames = 4
 
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
 
     super().__init__(sys=sys, backend=backend, **kwargs)

@@ -156,6 +156,7 @@ class Ant(PipelineEnv):
       reset_noise_scale=0.1,
       exclude_current_positions_from_observation=True,
       backend='generalized',
+      sys_params=None,
       **kwargs,
   ):
     path = epath.resource_path('brax') / 'envs/assets/ant.xml'
@@ -182,6 +183,10 @@ class Ant(PipelineEnv):
               gear=200 * jp.ones_like(sys.actuator.gear)
           )
       )
+
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
 

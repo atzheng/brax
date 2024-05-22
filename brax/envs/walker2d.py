@@ -23,6 +23,7 @@ from brax.io import mjcf
 from etils import epath
 import jax
 from jax import numpy as jp
+import mujoco
 
 
 class Walker2d(PipelineEnv):
@@ -137,6 +138,7 @@ class Walker2d(PipelineEnv):
       reset_noise_scale=5e-3,
       exclude_current_positions_from_observation=True,
       backend='generalized',
+      sys_params=None,
       **kwargs
   ):
     """Creates a Walker environment.
@@ -158,9 +160,11 @@ class Walker2d(PipelineEnv):
     """
     path = epath.resource_path('brax') / 'envs/assets/walker2d.xml'
     sys = mjcf.load(path)
-
     n_frames = 4
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     super().__init__(sys=sys, backend=backend, **kwargs)
 

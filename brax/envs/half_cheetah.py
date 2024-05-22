@@ -21,6 +21,7 @@ from brax.io import mjcf
 from etils import epath
 import jax
 from jax import numpy as jp
+import mujoco
 
 
 class Halfcheetah(PipelineEnv):
@@ -129,6 +130,7 @@ class Halfcheetah(PipelineEnv):
       reset_noise_scale=0.1,
       exclude_current_positions_from_observation=True,
       backend='generalized',
+      sys_params=None,
       **kwargs
   ):
     path = epath.resource_path('brax') / 'envs/assets/half_cheetah.xml'
@@ -141,6 +143,10 @@ class Halfcheetah(PipelineEnv):
       n_frames = 16
       gear = jp.array([120, 90, 60, 120, 100, 100])
       sys = sys.replace(actuator=sys.actuator.replace(gear=gear))
+
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
 

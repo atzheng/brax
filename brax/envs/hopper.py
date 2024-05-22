@@ -23,6 +23,7 @@ from brax.io import mjcf
 from etils import epath
 import jax
 from jax import numpy as jp
+import mujoco
 
 
 class Hopper(PipelineEnv):
@@ -155,6 +156,7 @@ class Hopper(PipelineEnv):
       reset_noise_scale=5e-3,
       exclude_current_positions_from_observation=True,
       backend='generalized',
+      sys_params=None,
       **kwargs
   ):
     """Creates a Hopper environment.
@@ -177,6 +179,9 @@ class Hopper(PipelineEnv):
     """
     path = epath.resource_path('brax') / 'envs/assets/hopper.xml'
     sys = mjcf.load(path)
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     n_frames = 4
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)

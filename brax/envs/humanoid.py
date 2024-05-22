@@ -187,6 +187,7 @@ class Humanoid(PipelineEnv):
       reset_noise_scale=1e-2,
       exclude_current_positions_from_observation=True,
       backend='generalized',
+      sys_params=None,
       **kwargs,
   ):
     path = epath.resource_path('brax') / 'envs/assets/humanoid.xml'
@@ -202,13 +203,9 @@ class Humanoid(PipelineEnv):
           350.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0])  # pyformat: disable
       sys = sys.replace(actuator=sys.actuator.replace(gear=gear))
 
-    if backend == 'mjx':
-      sys = sys.tree_replace({
-          'opt.solver': mujoco.mjtSolver.mjSOL_NEWTON,
-          'opt.disableflags': mujoco.mjtDisableBit.mjDSBL_EULERDAMP,
-          'opt.iterations': 1,
-          'opt.ls_iterations': 4,
-      })
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
 

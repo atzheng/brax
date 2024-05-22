@@ -113,6 +113,7 @@ class Swimmer(PipelineEnv):
                reset_noise_scale=0.1,
                exclude_current_positions_from_observation=True,
                backend='generalized',
+               sys_params=None,
                **kwargs):
     path = epath.resource_path('brax') / 'envs/assets/swimmer.xml'
     sys = mjcf.load(path)
@@ -121,6 +122,10 @@ class Swimmer(PipelineEnv):
 
     if backend not in ['generalized']:
       raise ValueError(f'Unsupported backend: {backend}.')
+
+    sys = sys.tree_replace(
+      {"opt." + k: v for k, v in sys_params.items()} if sys_params else {}
+    )
 
     kwargs['n_frames'] = kwargs.get('n_frames', n_frames)
 
